@@ -91,9 +91,24 @@ class Grid:
         Returns:
             bool: True if the grid is valid, False otherwise.
         """
-        #TODO
-        raise NotImplementedError
-    
+        for i in range(9):
+            row_vals = [v for v in self._grid[i, :] if v != self._unknown]
+            if len(row_vals) != len(set(row_vals)):
+                return False
+            
+            col_vals = [v for v in self._grid[:, i] if v != self._unknown]
+            if len(col_vals) != len(set(col_vals)):
+                return False
+
+            # Check 3x3 subgrid
+            subgrid_row = (i // 3) * 3
+            subgrid_col = (i % 3) * 3
+            subgrid_vals = [v for v in self._grid[subgrid_row:subgrid_row+3, subgrid_col:subgrid_col+3].flatten() if v != self._unknown]
+            if len(subgrid_vals) != len(set(subgrid_vals)):
+                return False
+
+        return True
+
     def isValidMove(self, row: int, col: int, value: int) -> bool:
         """Check if placing a value at (row, col) is valid.
         
@@ -105,8 +120,28 @@ class Grid:
         Returns:
             bool: True if the placement is valid, False otherwise.
         """
-        #TODO
-        raise NotImplementedError
+        # You cannot place the unknown value
+        if value == self._unknown:
+            return False
+        # You cannot place a value in a known cell
+        if self._known_cells[row, col]:
+            return False
+        
+        # Check row
+        if value in self._grid[row, :]:
+            return False
+        
+        # Check column
+        if value in self._grid[:, col]:
+            return False
+        
+        # Check 3x3 subgrid
+        subgrid_row = (row // 3) * 3
+        subgrid_col = (col // 3) * 3
+        if value in self._grid[subgrid_row:subgrid_row+3, subgrid_col:subgrid_col+3]:
+            return False
+        
+        return True
 
     def __str__(self) -> str:
         """String representation of the Sudoku grid."""
