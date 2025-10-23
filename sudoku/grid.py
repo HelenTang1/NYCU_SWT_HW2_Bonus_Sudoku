@@ -1,6 +1,7 @@
 import numpy as np
 
 class Grid:
+    size:int = 9
     """A class representing a Sudoku grid."""
     def __init__(self, grid: np.ndarray, unknown: int = 0):
         """Initialize the Sudoku grid.
@@ -142,6 +143,20 @@ class Grid:
             return False
         
         return True
+
+    def find_empties(self) -> list[tuple[int, int]]:
+        """Find all empty cells in the grid.
+        
+        Returns:
+            list of tuples: List of (row, col) indices of empty cells.
+        """
+        empties = []
+        for i in range(9):
+            for j in range(9):
+                if self._grid[i, j] == self._unknown:
+                    empties.append((i, j))
+        return empties
+
 
     def __str__(self) -> str:
         """String representation of the Sudoku grid."""

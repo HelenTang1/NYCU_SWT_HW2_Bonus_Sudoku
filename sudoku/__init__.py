@@ -1,2 +1,3 @@
 from .grid import Grid
-all = [Grid]
+from .solver import Solver
+all = [Grid, Solver]
