@@ -9,7 +9,7 @@ class Solver:
     def solve(self) -> bool:
         """Perform a single step in solving the Sudoku puzzle using backtracking.
         Returns:
-            bool: True if a step was made, False if no step could be made.
+            bool: True if the puzzle is solved, False otherwise.
         """
         # Find the all empty cells
         empties = self.grid.find_empties()
