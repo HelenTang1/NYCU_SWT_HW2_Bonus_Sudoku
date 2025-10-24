@@ -40,8 +40,9 @@ class Grid:
             ValueError: If trying to overwrite a known (original) value
             IndexError: If row or col is out of bounds
         """
-        if self.value == self._unknown:
-            raise ValueError("Cannot set a cell to the unknown value. Use reset_cell instead.")
+        if value not in range(0, 10):
+            raise ValueError("The value must be between 0 and 9. \n" \
+            "Use reset_cell() to set the cell to an unknown value for undoing changes.")
         if not (0 <= row < 9 and 0 <= col < 9):
             raise IndexError(f"Cell position ({row}, {col}) is out of bounds")
         
