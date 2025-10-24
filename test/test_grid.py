@@ -85,3 +85,19 @@ def test_find_empties(a_valid_grid):
         (7, 0), (7, 1), (7, 2), (7, 6), (7, 7),
         (8, 0), (8, 1), (8, 2), (8, 3), (8, 5), (8, 6)
     ]
+
+def test_reset_cell(a_valid_grid):
+    # set an empty cell
+    a_valid_grid[0, 2] = 4
+    assert a_valid_grid[0, 2] == 4
+    # Reset an empty cell
+    a_valid_grid.reset_cell(0, 2)
+    assert a_valid_grid[0, 2] == 0
+
+    # Try to reset a known cell
+    with pytest.raises(ValueError):
+        a_valid_grid.reset_cell(0, 0)
+
+    # Try to reset an out-of-bounds cell
+    with pytest.raises(IndexError):
+        a_valid_grid.reset_cell(9, 0)
