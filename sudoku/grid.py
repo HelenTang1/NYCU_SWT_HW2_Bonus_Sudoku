@@ -40,6 +40,8 @@ class Grid:
             ValueError: If trying to overwrite a known (original) value
             IndexError: If row or col is out of bounds
         """
+        if self.value == self._unknown:
+            raise ValueError("Cannot set a cell to the unknown value. Use reset_cell instead.")
         if not (0 <= row < 9 and 0 <= col < 9):
             raise IndexError(f"Cell position ({row}, {col}) is out of bounds")
         
@@ -124,6 +126,7 @@ class Grid:
         # You cannot place the unknown value
         if value == self._unknown:
             return False
+        
         # You cannot place a value in a known cell
         if self._known_cells[row, col]:
             return False
@@ -143,6 +146,25 @@ class Grid:
             return False
         
         return True
+
+    def reset_cell(self, row: int, col: int) -> None:
+        """Reset a cell to unknown value.
+        
+        Args:
+            row (int): Row index (0-8)
+            col (int): Column index (0-8)
+            
+        Raises:
+            ValueError: If trying to reset a known (original) value
+            IndexError: If row or col is out of bounds
+        """
+        if not (0 <= row < 9 and 0 <= col < 9):
+            raise IndexError(f"Cell position ({row}, {col}) is out of bounds")
+        
+        if self._known_cells[row, col]:
+            raise ValueError(f"Cannot reset known value at position ({row}, {col})")
+        
+        self._grid[row, col] = self._unknown
 
     def find_empties(self) -> list[tuple[int, int]]:
         """Find all empty cells in the grid.
