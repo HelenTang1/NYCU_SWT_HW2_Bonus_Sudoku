@@ -70,7 +70,8 @@ def test_isValidGrid_invalid(grid_data):
            "invalid subgrid conflict"]
 )
 def test_isValidMove(a_valid_grid, row, col, value, expected):
-    assert a_valid_grid.isValidMove(row, col, value) == expected
+    val_move, reason = a_valid_grid.isValidMove(row, col, value)
+    assert val_move == expected
 
 def test_find_empties(a_valid_grid):
     empty_cells = a_valid_grid.find_empties()

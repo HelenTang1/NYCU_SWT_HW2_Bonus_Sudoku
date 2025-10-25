@@ -49,8 +49,9 @@ class Grid:
         if self._known_cells[row, col]:
             raise ValueError(f"Cannot overwrite known value at position ({row}, {col})")
         
-        if not self.isValidMove(row, col, value):
-            raise ValueError(f"Placing value {value} at position ({row}, {col}) is not a valid move")
+        val_move, reason = self.isValidMove(row, col, value)
+        if not val_move:
+            raise ValueError(f"Placing value {value} at position ({row}, {col}) is not a valid move: {reason}")
 
         self._grid[row, col] = value
 
@@ -113,7 +114,7 @@ class Grid:
 
         return True
 
-    def isValidMove(self, row: int, col: int, value: int) -> bool:
+    def isValidMove(self, row: int, col: int, value: int) -> tuple[bool, str | None]:
         """Check if placing a value at (row, col) is valid.
         
         Args:
@@ -123,32 +124,33 @@ class Grid:
 
         Returns:
             bool: True if the placement is valid, False otherwise.
+            reason (str): Explanation if the move is invalid.
         """
         # You cannot place the unknown value
         if value == self._unknown:
-            return False
-        
+            return False, "Cannot place unknown value."
+
         # You cannot place a value in a known cell
         if self._known_cells[row, col]:
-            return False
-        
+            return False, "Cannot place value in known cell."
+
         # Check row
         if value in self._grid[row, :]:
-            return False
-        
+            return False, "Value conflict in row."
+
         # Check column
         if value in self._grid[:, col]:
-            return False
-        
+            return False, "Value conflict in column."
+
         # Check 3x3 subgrid
         subgrid_row = (row // 3) * 3
         subgrid_col = (col // 3) * 3
         if value in self._grid[subgrid_row:subgrid_row+3, subgrid_col:subgrid_col+3]:
-            return False
+            return False, "Value conflict in subgrid."
         
-        return True
+        return True, None
 
-    def reset_cell(self, row: int, col: int) -> None:
+    def reset_cell(self, row: int, col: int, force = False) -> None:
         """Reset a cell to unknown value.
         
         Args:
@@ -161,11 +163,15 @@ class Grid:
         """
         if not (0 <= row < 9 and 0 <= col < 9):
             raise IndexError(f"Cell position ({row}, {col}) is out of bounds")
-        
-        if self._known_cells[row, col]:
+
+        if self._known_cells[row, col] and not force:
             raise ValueError(f"Cannot reset known value at position ({row}, {col})")
         
         self._grid[row, col] = self._unknown
+
+        if force:
+            # update known cells tracking if forced
+            self._known_cells[row, col] = False
 
     def find_empties(self) -> list[tuple[int, int]]:
         """Find all empty cells in the grid.

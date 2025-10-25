@@ -41,7 +41,8 @@ class Solver:
             # Try numbers from start_num to 9
             found = False
             for num in range(start_num, 10):
-                if self.grid.isValidMove(row, col, num):
+                val_move, reason = self.grid.isValidMove(row, col, num)
+                if val_move:
                     # Place the number
                     self.grid[row, col] = num
                     self.history.append((row, col, num))
