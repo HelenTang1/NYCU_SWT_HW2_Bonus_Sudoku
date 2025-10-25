@@ -1,3 +1,4 @@
 from .grid import Grid
 from .solver import Solver
-all = [Grid, Solver]
+from .gen import Generator
+all = [Grid, Solver, Generator]
