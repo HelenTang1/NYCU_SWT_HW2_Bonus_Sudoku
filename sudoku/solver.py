@@ -1,13 +1,15 @@
 from . import Grid
 from collections import deque
+import random
 
 class Solver:
     def __init__(self, grid: Grid):
         self.grid:Grid = grid
         self.empties = deque(self.grid.find_empties())
         self.history = deque(maxlen=len(self.empties))
+        self.start_num = {}
 
-    def solve(self) -> bool:
+    def solve(self, random_bool: bool = False, seed: int | None = None) -> bool:
         """Solve the Sudoku puzzle using iterative backtracking.
         
         Uses self.history as an explicit stack to avoid recursion, making it 
@@ -23,6 +25,8 @@ class Solver:
         # Clear history and use it as our backtracking stack
         # Each entry: (row, col, value)
         self.history.clear()
+        random.seed(seed)
+
         
         while self.empties:
             # Get the next empty cell from the front of the queue
@@ -32,15 +36,22 @@ class Solver:
             # Determine which number to start trying from
             if current_val != self.grid.unknown:
                 # We're backtracking to this cell, try the next number
-                start_num = current_val + 1
+                rotated = list(range(self.start_num[(row, col)], 10)) + list(range(1, self.start_num[(row, col)]))
+                to_try = rotated[rotated.index(current_val)+1:]  # Try numbers after current_val
                 self.grid.reset_cell(row, col)
+
             else:
                 # First time visiting this cell
-                start_num = 1
+                if (random_bool):
+                    start_num = random.randint(1, 9)
+                else:
+                    start_num = 1
+                self.start_num[(row, col)] = start_num
+                # Try numbers in a rotated order starting at `start_num` and wrapping to
+                to_try = list(range(start_num, 10)) + list(range(1, self.start_num.get((row, col), 1)))
             
-            # Try numbers from start_num to 9
             found = False
-            for num in range(start_num, 10):
+            for num in to_try:
                 val_move, reason = self.grid.isValidMove(row, col, num)
                 if val_move:
                     # Place the number
@@ -58,7 +69,6 @@ class Solver:
                 
                 # Pop the last placed value
                 prev_row, prev_col, prev_num = self.history.pop()
-                
                 # Add both cells back: current cell stays at front, previous cell goes before it
                 self.empties.appendleft((prev_row, prev_col))
         
