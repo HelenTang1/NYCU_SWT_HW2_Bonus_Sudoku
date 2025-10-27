@@ -30,3 +30,24 @@ def test_generate(template_grid, difficulty):
     # Check 2: The puzzle is still solvable.
     solver = Solver(puzzle)
     assert solver.solve() == True
+
+@pytest.mark.parametrize("seed, difficulty",
+                         [(1, 20), (42, 40), (42, 60)])
+def test_gen_template_none(seed, difficulty):
+    # Test generating a full board without a template
+    generator = Generator(template_grid=None, seed=seed)
+    full_board = generator.template_grid
+
+    # Check that there are no empty cells
+    assert len(full_board.find_empties()) == 0
+
+    # Check that the generated board is valid
+    assert full_board.isValidGrid() == True
+
+    puzzle = generator.generate(difficulty=difficulty, seed=seed)
+    # Check that the puzzle has the correct number of empty cells
+    assert len(puzzle.find_empties()) == difficulty
+    # Check that the puzzle is solvable
+    solver = Solver(puzzle)
+    assert solver.solve() == True
+    
