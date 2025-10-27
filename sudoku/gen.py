@@ -1,11 +1,27 @@
-from . import Grid
+from . import Grid, Solver
 import random
+import numpy as np
 
 class Generator:
-    def __init__(self, template_grid: Grid):
+    def __init__(self, template_grid: Grid | None = None, seed: int = None):
         # template_grid is assumed to be a fully solved valid Sudoku grid
-        assert len(template_grid.find_empties()) == 0, "Template grid must be fully solved."
+        if template_grid is not None:
+            assert len(template_grid.find_empties()) == 0, "Template grid must be fully solved."
+        else:
+            template_grid = self.generate_full_board(seed=seed)
         self.template_grid = template_grid
+
+    @staticmethod
+    def generate_full_board(seed: int = None) -> Grid:
+        """Generate a complete valid Sudoku board using backtracking with MRV.
+        """
+        random.seed(seed)
+        # Use solver to generate a full board
+        board = Grid(np.zeros((9, 9), dtype=int))
+        solver = Solver(board)
+        if not solver.solve(random_bool=True, seed=seed):
+            raise RuntimeError("Failed to generate a full Sudoku board")
+        return board
 
     def generate(self, difficulty: int, seed: int = None) -> Grid:
         """Generate a Sudoku puzzle by removing numbers from the template grid.
