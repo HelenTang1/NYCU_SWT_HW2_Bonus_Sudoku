@@ -29,7 +29,7 @@ def test_generate(template_grid, difficulty):
 
     # Check 2: The puzzle is still solvable.
     solver = Solver(puzzle)
-    assert solver.solve() == True
+    assert solver.solve() >= 1
 
 @pytest.mark.parametrize("seed, difficulty",
                          [(1, 20), (42, 40), (42, 60)])
@@ -49,5 +49,24 @@ def test_gen_template_none(seed, difficulty):
     assert len(puzzle.find_empties()) == difficulty
     # Check that the puzzle is solvable
     solver = Solver(puzzle)
-    assert solver.solve() == True
+    assert solver.solve() >= 1
+
+
+def test_ensure_unique_flag(template_grid):
+    """Test that ensure_unique=False may produce non-unique puzzles."""
+    generator = Generator(template_grid=template_grid)
     
+    # With ensure_unique=False, might have multiple solutions
+    puzzle_multi = generator.generate(difficulty=50, seed=42, ensure_unique=False)
+    solver_multi = Solver(puzzle_multi)
+    count_multi = solver_multi.solve(max_count=3)
+    # This should be >1
+    assert count_multi > 1
+
+    # With ensure_unique=True, although the same settings, it should have 1 solution
+    puzzle_unique = generator.generate(difficulty=50, seed=42, ensure_unique=True)
+    solver_unique = Solver(puzzle_unique)
+    count_unique = solver_unique.solve(max_count=3)
+    assert count_unique == 1
+
+
