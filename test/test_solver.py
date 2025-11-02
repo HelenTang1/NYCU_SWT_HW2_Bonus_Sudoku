@@ -1,5 +1,3 @@
-import sys
-sys.path.append(".")
 from sudoku import Solver, Grid
 import pytest
 import numpy as np
