@@ -1,4 +1,5 @@
 from .grid import Grid
-from .solver import Solver
+from .solver import Solver, HumanLogicSolver
 from .gen import Generator
-all = [Grid, Solver, Generator]
+from .rating import Rank, get_rating
+all = [Grid, Solver, Generator, Rank, HumanLogicSolver, get_rating,]
