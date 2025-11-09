@@ -100,3 +100,30 @@ def test_reset_cell(a_valid_grid):
     # Try to reset an out-of-bounds cell
     with pytest.raises(IndexError):
         a_valid_grid.reset_cell(9, 0)
+
+
+def test_setitem_invalid_moves_and_errors(a_valid_grid):
+    g = a_valid_grid
+    # Overwrite a known cell should raise
+    with pytest.raises(ValueError):
+        g[0, 0] = 4
+
+    # Placing a value out of allowed range should raise
+    with pytest.raises(ValueError):
+        g[0, 2] = 10
+
+    # Placing the unknown value via __setitem__ is not allowed (use reset_cell)
+    with pytest.raises(ValueError):
+        g[0, 2] = 0
+
+    # Setting a cell that conflicts with row/col/subgrid should raise
+    with pytest.raises(ValueError):
+        g[0, 2] = 5  # conflicts with 5 at (0,0)
+
+    # Out-of-bounds index should raise IndexError
+    with pytest.raises(IndexError):
+        g[9, 0] = 1
+
+    # Wrong key type for __setitem__ should raise TypeError
+    with pytest.raises(TypeError):
+        g[0] = 1
