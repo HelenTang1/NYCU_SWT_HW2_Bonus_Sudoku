@@ -10,7 +10,7 @@ class Solver:
         self.history = deque(maxlen=len(self.empties))
         self.start_num = {}
 
-    def solve(self, random_bool: bool = False, seed: int | None = None, max_count: int = 1) -> bool:
+    def solve(self, random_bool: bool = False, seed: int | None = None, max_count: int = 1) -> int:
         """Solve the Sudoku puzzle using iterative backtracking.
         
         Uses self.history as an explicit stack to avoid recursion, making it 
@@ -52,7 +52,7 @@ class Solver:
             # Determine which number to start trying from
             if current_val != self.grid.unknown:
                 # We're backtracking to this cell, try the next number
-                rotated = list(range(self.start_num[(row, col)], 10)) + list(range(1, self.start_num[(row, col)]))
+                rotated = list(range(self.start_num.get((row, col), 1), 10)) + list(range(1, self.start_num.get((row, col), 1)))
                 to_try = rotated[rotated.index(current_val)+1:]  # Try numbers after current_val
                 self.grid.reset_cell(row, col)
 
@@ -172,7 +172,7 @@ class HumanLogicSolver():
         positions = defaultdict(list)
         for (r, c) in unit:
             if self.grid[r, c] == self.grid.unknown:
-                for num in self.candidates[(r, c)]:
+                for num in self.candidates.get((r, c), set()):
                     positions[num].append((r, c))
         return positions
     
