@@ -23,7 +23,6 @@ def get_rating(grid: Grid) -> Rank:
     # increasingly powerful technique sets. This ensures we classify by the
     # minimal technique required rather than what the solver happened to use.
     from .solver import HumanLogicSolver
-    import copy
 
     def _try_with_methods(methods: set[str]) -> bool:
         # operate on a copy of the grid to avoid mutating the caller's grid

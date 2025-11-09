@@ -95,6 +95,14 @@ class HumanLogicSolver():
     def __init__(self, grid: Grid):
         self.grid:Grid = grid
         self.candidates: dict[tuple[int, int], set[int]] = {}
+        # cache unit list for faster repeated access
+        self.units = HumanLogicSolver.unit_list()
+        # precompute peers for every cell to avoid recomputing sets
+        self.peers: dict[tuple[int,int], set[tuple[int,int]]] = {}
+        for rr in range(9):
+            for cc in range(9):
+                self.peers[(rr, cc)] = HumanLogicSolver.peers_of(rr, cc)
+        # initial full candidate computation
         self.compute_candidates()
 
     @staticmethod
@@ -121,18 +129,43 @@ class HumanLogicSolver():
         return units
     
     def compute_candidates(self) -> dict[tuple[int, int], set[int]]:
+        # rebuild candidates from scratch for all empty cells
+        self.candidates = {}
         for r in range(9):
             for c in range(9):
                 if self.grid[r, c] != self.grid.unknown:
                     continue
                 # start with all possibilities and remove values present in peers
                 opts = set(HumanLogicSolver.ALL)
-                for pr, pc in HumanLogicSolver.peers_of(r, c):
+                for pr, pc in self.peers[(r, c)]:
                     val = self.grid[pr, pc]
                     if val != self.grid.unknown and val in opts:
                         opts.discard(val)
                 self.candidates[(r, c)] = opts
         return self.candidates
+
+    def set_value(self, r: int, c: int, v: int) -> bool:
+        """Place value v at (r,c) and incrementally update self.candidates.
+
+        Returns True if placement succeeded, False if invalid move.
+        """
+        # set on the grid (Grid will enforce internal state)
+        self.grid[r, c] = v
+        # remove this cell from candidates
+        if (r, c) in self.candidates:
+            del self.candidates[(r, c)]
+        # remove v from all peers' candidate sets
+        for pr, pc in self.peers[(r, c)]:
+            if self.grid[pr, pc] != self.grid.unknown:
+                continue
+            if (pr, pc) not in self.candidates:
+                continue
+            opts = self.candidates[(pr, pc)]
+            if v in opts:
+                new_opts = set(opts)
+                new_opts.discard(v)
+                self.candidates[(pr, pc)] = new_opts
+        return True
     
     def get_positions_in_unit(self, unit):
         # positions(dict): number -> positions in unit that can place it
@@ -149,28 +182,20 @@ class HumanLogicSolver():
             if len(opts) == 1:
                 v = next(iter(opts))
                 # double-check validity (peers may have changed)
-                valid, _ = self.grid.isValidMove(r, c, v)
-                if valid and self.grid[r, c] == self.grid.unknown:
-                    self.grid[r, c] = v
-                    # recompute candidates after placement
-                    self.compute_candidates()
+                if self.grid[r, c] == self.grid.unknown and self.set_value(r, c, v):
                     return True
         return False
     
     def hidden_singles(self) -> bool:
         # Apply the first found hidden single immediately and recompute
         # candidates so we don't create conflicting placements from different units.
-        for unit in HumanLogicSolver.unit_list():
+        for unit in self.units:
             positions = self.get_positions_in_unit(unit)
             for num, pos_list in positions.items():
                 if len(pos_list) == 1:
                     r, c = pos_list[0]
                     # double-check the move is still valid (peers may have changed)
-                    valid, _ = self.grid.isValidMove(r, c, num)
-                    if valid and self.grid[r, c] == self.grid.unknown:
-                        self.grid[r, c] = num
-                        # recompute candidates after placing a value
-                        self.compute_candidates()
+                    if self.grid[r, c] == self.grid.unknown and self.set_value(r, c, num):
                         return True
         return False
     
@@ -179,7 +204,7 @@ class HumanLogicSolver():
         progress = False
         # For each unit (row/col/box), find two cells with identical candidate sets of size 2
         # and eliminate those two digits from other cells in the same unit.
-        for unit in HumanLogicSolver.unit_list():
+        for unit in self.units:
             # map candidate tuple -> list of positions with that candidate set
             pair_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
             for pos in unit:
@@ -217,7 +242,7 @@ class HumanLogicSolver():
         progress = False
         # Hidden pairs: in a unit, find two digits that can only go in the same two cells.
         # When found, reduce those two cells' candidates to just those two digits.
-        for unit in HumanLogicSolver.unit_list():
+        for unit in self.units:
             positions = self.get_positions_in_unit(unit)
             # consider all pairs of digits
             for a, b in itertools.combinations(range(1, 10), 2):
